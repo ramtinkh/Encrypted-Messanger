@@ -8,6 +8,7 @@ from Cert import generate_server_cert
 
 # User database (insecure for demonstration purposes)
 json_users = []
+logged_in_users = []
 
 def load_users():
     try:
@@ -52,7 +53,7 @@ def handle_client(ssl_socket):
 
         message = data.decode().strip()
 
-
+        print("logged in users :", logged_in_users)
         if not authenticated:
             if message.startswith("REGISTER"):
                 _, username, password = message.split()
@@ -63,13 +64,17 @@ def handle_client(ssl_socket):
                 _, username, password = message.split()
                 if authenticate_user(username, password):
                     authenticated = True
-                    print(authenticated)
+                    logged_in_users.append(username)
                     ssl_socket.sendall(b"Login successful.")
                 else:
                     ssl_socket.sendall(b"Invalid username or password. Please try again.")
             else:
                 ssl_socket.sendall(b"Invalid command. Please register or login.")
         else:
+            if message.startswith("LOGOUT"):
+                _, username = message.split()
+                logged_in_users.remove(username)
+                ssl_socket.sendall(b"logout successful.")
             # Process authenticated client commands here
             ssl_socket.sendall(b"Authenticated command received.")
 
