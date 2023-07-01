@@ -1,25 +1,27 @@
 import socket
 import ssl
 import json
+import bcrypt
+import os
 
-
-from Cert import *
+from Cert import generate_server_cert
 
 # User database (insecure for demonstration purposes)
-json_users = {}
+json_users = []
 
 def load_users():
     try:
         with open('./users.json') as file:
             jsonify = json.load(file)
-            for i in range(len(jsonify)):
-                json_users[jsonify[i]['username']] = jsonify[i]['password']
+            global json_users
+            json_users = jsonify
             print(json_users)
     except json.JSONDecodeError as e:
         print(f"Invalid JSON format: {e}")
 
 def save_users():
     encrypted_users = json_users
+    print(encrypted_users)
     with open('./users.json', 'w') as f:
         json.dump(encrypted_users, f)
 
@@ -76,15 +78,34 @@ def handle_client(ssl_socket):
 
 
 def register_user(username, password):
-    json_users[username] = password
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+    user_dict = {
+        "username": username,
+        "hashed_password": hashed_password.decode(),
+        "salt": salt.decode()
+    }
+    json_users.append(user_dict)
     save_users()
     print("completed")
 
 
 def authenticate_user(username, password):
-    if username in json_users and json_users[username] == password:
-        return True
+    print(username)
+    print(json_users[0]['username'])
+    print(username == json_users[0]['username'])
+    for i in range(len(json_users)):
+        if username == json_users[i]['username']:
+            salt = json_users[i]['salt'].encode()
+            print(salt)
+            hashed_pass = bcrypt.hashpw(password.encode('utf-8'), salt)
+            if json_users[i]['hashed_password'] == hashed_pass.decode():
+                return True
     return False
+
+    # if username in json_users and json_users[username] == password:
+    #     return True
+    # return False
 
 # Start the server
 host = 'localhost'

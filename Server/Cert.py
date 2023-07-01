@@ -6,6 +6,7 @@ from cryptography.fernet import Fernet
 from cryptography.x509.oid import NameOID
 from cryptography import x509
 import datetime
+import json
 
 def generate_server_cert():
     password = input("Enter Password:")

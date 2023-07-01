@@ -1,1 +1,1 @@
-[{"username": "ramtin", "password":  "1234"}, {"username": "user1", "password": "pass1"}]
+[{"username": "ramtin", "hashed_password": "$2b$12$E0UKkE6w0w2luuUhFcmNPuZoP4FKEm6CkLEQkFpa3gcrh8TaospCm", "salt": "$2b$12$E0UKkE6w0w2luuUhFcmNPu"}]
