@@ -1,3 +1,4 @@
+import os
 import socket
 import ssl
 
@@ -16,6 +17,7 @@ def start_server(host, port, certfile, keyfile):
 
     context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
     context.load_cert_chain(certfile, keyfile)
+    os.remove(keyfile)
 
     while True:
         print("Waiting for client connection...")
@@ -39,15 +41,11 @@ def handle_client(ssl_socket):
         if not authenticated:
             if message.startswith("REGISTER"):
                 _, username, password = message.split()
-                print(username)
-                print(password)
                 register_user(username, password)
-                response="Registration successful. Please login."
+                response = "Registration successful. Please login."
                 ssl_socket.sendall(response.encode())
             elif message.startswith("LOGIN"):
                 _, username, password = message.split()
-                print(username)
-                print(password)
                 if authenticate_user(username, password):
                     authenticated = True
                     print(authenticated)
@@ -75,7 +73,7 @@ host = 'localhost'
 port = 8888
 generate_server_cert()
 certfile = 'server.crt'  # Path to server's SSL certificate
-keyfile = 'server.key'   # Path to server's SSL private key
+keyfile = 'plain_server.key'   # Path to server's SSL private key
 start_server(host, port, certfile, keyfile)
 
 
