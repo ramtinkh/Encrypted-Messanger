@@ -19,7 +19,7 @@ def connect_to_server(host, port):
         response = receive_data(ssl_socket)
         print("Server response:", response.decode())
 
-        if response.decode() == b"Login successful.":
+        if response.decode() == "Login successful.":
             break
 
     key_gen(username, password)
@@ -29,6 +29,8 @@ def connect_to_server(host, port):
         ssl_socket.sendall(command.encode())
         response = receive_data(ssl_socket)
         print("Server response:", response.decode())
+        if response.decode() == "logout successful.":
+            break
 
     ssl_socket.close()
 
