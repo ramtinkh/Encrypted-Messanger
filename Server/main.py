@@ -1,14 +1,28 @@
-import os
 import socket
 import ssl
+import json
+
 
 from Cert import *
 
 # User database (insecure for demonstration purposes)
-users = {
-    "user1": "password1",
-    "user2": "password2",
-}
+json_users = {}
+
+def load_users():
+    try:
+        with open('./users.json') as file:
+            jsonify = json.load(file)
+            for i in range(len(jsonify)):
+                json_users[jsonify[i]['username']] = jsonify[i]['password']
+            print(json_users)
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON format: {e}")
+
+def save_users():
+    encrypted_users = json_users
+    with open('./users.json', 'w') as f:
+        json.dump(encrypted_users, f)
+
 
 def start_server(host, port, certfile, keyfile):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,11 +74,15 @@ def handle_client(ssl_socket):
 
     ssl_socket.close()
 
+
 def register_user(username, password):
-    users[username] = password
+    json_users[username] = password
+    save_users()
+    print("completed")
+
 
 def authenticate_user(username, password):
-    if username in users and users[username] == password:
+    if username in json_users and json_users[username] == password:
         return True
     return False
 
@@ -74,6 +92,7 @@ port = 8888
 generate_server_cert()
 certfile = 'server.crt'  # Path to server's SSL certificate
 keyfile = 'plain_server.key'   # Path to server's SSL private key
+load_users()
 start_server(host, port, certfile, keyfile)
 
 
