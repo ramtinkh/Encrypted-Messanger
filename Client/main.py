@@ -2,6 +2,7 @@ import socket
 import ssl
 
 from keygen import *
+from messcrypt import *
 
 
 def connect_to_server(host, port):
@@ -11,10 +12,16 @@ def connect_to_server(host, port):
     ssl_socket.connect((host, port))
     print("Connected to server:", (host, port))
 
+    with open('../Server/server_public_key.pem', 'rb') as key_file:
+        server_pub = serialization.load_pem_public_key(
+            key_file.read(),
+            backend=default_backend()
+        )
+
     while True:
         command = input("Enter command (REGISTER or LOGIN): ")
-
-        ssl_socket.sendall(command.encode())
+        print(encrypt_message(command.encode(), server_pub))
+        ssl_socket.sendall(encrypt_message(command.encode(), server_pub))
         _, username, password = command.split()
         response = receive_data(ssl_socket)
         print("Server response:", response.decode())

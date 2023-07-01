@@ -67,10 +67,10 @@ def generate_server_cert():
                     format=serialization.PrivateFormat.TraditionalOpenSSL,
                     encryption_algorithm=serialization.NoEncryption()
                 ))
-
+            return private_key
         except:
             print("Wrong Password")
-            generate_server_cert()
+            return generate_server_cert()
 
     # Generate a certificate signing request (CSR)
     csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([

@@ -5,6 +5,7 @@ import bcrypt
 import os
 
 from Cert import generate_server_cert
+from messcrypt import *
 
 # User database (insecure for demonstration purposes)
 json_users = []
@@ -51,7 +52,7 @@ def handle_client(ssl_socket):
         if not data:
             break
 
-        message = data.decode().strip()
+        message = decrypt_message(data, private_key).decode().strip()
 
         print("logged in users :", logged_in_users)
         if not authenticated:
@@ -109,7 +110,7 @@ def authenticate_user(username, password):
 # Start the server
 host = 'localhost'
 port = 8888
-generate_server_cert()
+private_key = generate_server_cert()
 certfile = 'server.crt'  # Path to server's SSL certificate
 keyfile = 'plain_server.key'   # Path to server's SSL private key
 load_users()
