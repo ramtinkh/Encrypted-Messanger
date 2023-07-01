@@ -46,7 +46,6 @@ def receive_data(ssl_socket):
     # print(received_data)
     # return received_data
 
-
 # Connect to the server
 host = 'localhost'
 port = 8888

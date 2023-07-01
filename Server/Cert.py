@@ -1,24 +1,61 @@
+import os
+from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
+from cryptography.fernet import Fernet
 from cryptography.x509.oid import NameOID
 from cryptography import x509
 import datetime
 
 def generate_server_cert():
-    # Generate a private key
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-    )
+    password = input("Enter Password:")
 
-    # Save the private key to a file
-    with open("server.key", "wb") as key_file:
-        key_file.write(private_key.private_bytes(
+    if os.stat('server.key').st_size == 0:
+        # Generate a new private key
+        private_key = rsa.generate_private_key(
+         public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+
+        # Serialize the private key to PEM format
+        pem_data = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.NoEncryption()
-        ))
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.BestAvailableEncryption(password.encode())
+        )
+
+        # Save the serialized private key to a file
+        with open('server.key', 'wb') as file_out:
+            file_out.write(pem_data)
+
+
+        with open('plain_server.key', 'wb') as file_out:
+            file_out.write(private_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            ))
+    else:
+        with open('server.key', 'rb') as file_in:
+            encrypted_private_key = file_in.read()
+        try:
+            # Deserialize and decrypt the private key
+            private_key = serialization.load_pem_private_key(
+                encrypted_private_key,
+                password=password.encode(),
+                backend=default_backend()
+                )
+
+            with open('plain_server.key', 'wb') as file_out:
+                file_out.write(private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption()
+                ))
+        except:
+            print("Wrong Password")
+            generate_server_cert()
 
     # Generate a certificate signing request (CSR)
     csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
