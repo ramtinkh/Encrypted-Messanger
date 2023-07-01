@@ -36,6 +36,19 @@ def generate_server_cert():
                 format=serialization.PrivateFormat.TraditionalOpenSSL,
                 encryption_algorithm=serialization.NoEncryption()
             ))
+
+        # Get the corresponding public key from the private key
+        public_key = private_key.public_key()
+
+        # Serialize the public key to PEM format.
+        public_key_pem = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+
+
+        with open('server_public_key.pem', 'wb') as f:
+            f.write(public_key_pem)
     else:
         with open('server.key', 'rb') as file_in:
             encrypted_private_key = file_in.read()

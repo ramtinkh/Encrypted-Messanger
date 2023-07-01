@@ -52,6 +52,7 @@ def handle_client(ssl_socket):
 
         message = data.decode().strip()
 
+
         if not authenticated:
             if message.startswith("REGISTER"):
                 _, username, password = message.split()
