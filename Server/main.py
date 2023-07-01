@@ -15,13 +15,11 @@ def load_users():
             jsonify = json.load(file)
             global json_users
             json_users = jsonify
-            print(json_users)
     except json.JSONDecodeError as e:
         print(f"Invalid JSON format: {e}")
 
 def save_users():
     encrypted_users = json_users
-    print(encrypted_users)
     with open('./users.json', 'w') as f:
         json.dump(encrypted_users, f)
 
@@ -88,17 +86,12 @@ def register_user(username, password):
     }
     json_users.append(user_dict)
     save_users()
-    print("completed")
 
 
 def authenticate_user(username, password):
-    print(username)
-    print(json_users[0]['username'])
-    print(username == json_users[0]['username'])
     for i in range(len(json_users)):
         if username == json_users[i]['username']:
             salt = json_users[i]['salt'].encode()
-            print(salt)
             hashed_pass = bcrypt.hashpw(password.encode('utf-8'), salt)
             if json_users[i]['hashed_password'] == hashed_pass.decode():
                 return True
