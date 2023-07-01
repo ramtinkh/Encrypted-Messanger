@@ -9,6 +9,7 @@ users = {
     "user2": "password2",
 }
 
+
 def start_server(host, port, certfile, keyfile):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
@@ -24,6 +25,7 @@ def start_server(host, port, certfile, keyfile):
 
         ssl_socket = context.wrap_socket(client_socket, server_side=True)
         handle_client(ssl_socket)
+
 
 def handle_client(ssl_socket):
     authenticated = False
@@ -42,7 +44,8 @@ def handle_client(ssl_socket):
                 print(username)
                 print(password)
                 register_user(username, password)
-                response="Registration successful. Please login."
+                print(users)
+                response = "Registration successful. Please login."
                 ssl_socket.sendall(response.encode())
             elif message.startswith("LOGIN"):
                 _, username, password = message.split()
@@ -62,20 +65,22 @@ def handle_client(ssl_socket):
 
     ssl_socket.close()
 
+
 def register_user(username, password):
     users[username] = password
+    print("completed")
+
 
 def authenticate_user(username, password):
     if username in users and users[username] == password:
         return True
     return False
 
+
 # Start the server
 host = 'localhost'
 port = 8888
 generate_server_cert()
 certfile = 'server.crt'  # Path to server's SSL certificate
-keyfile = 'server.key'   # Path to server's SSL private key
+keyfile = 'server.key'  # Path to server's SSL private key
 start_server(host, port, certfile, keyfile)
-
-

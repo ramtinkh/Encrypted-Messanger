@@ -32,12 +32,19 @@ def connect_to_server(host, port):
 
 def receive_data(ssl_socket):
     received_data = b""
-    while True:
-        data = ssl_socket.recv(1024)
-        if not data:
-            break
-        received_data += data
+    data = ssl_socket.recv(1024)
+    received_data += data
     return received_data
+    # while True:
+    #     print("inja")
+    #     data = ssl_socket.recv(1024)
+    #     print(data)
+    #     if not data:
+    #         print("omad biron")
+    #         break
+    #     received_data += data
+    # print(received_data)
+    # return received_data
 
 
 # Connect to the server
