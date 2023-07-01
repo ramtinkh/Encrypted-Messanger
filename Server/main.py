@@ -3,6 +3,8 @@ import ssl
 import json
 import bcrypt
 import os
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
+
 
 from Cert import generate_server_cert
 from messcrypt import *
@@ -10,6 +12,7 @@ from messcrypt import *
 # User database (insecure for demonstration purposes)
 json_users = []
 logged_in_users = []
+session_keys = []
 
 def load_users():
     try:
@@ -24,6 +27,9 @@ def save_users():
     encrypted_users = json_users
     with open('./users.json', 'w') as f:
         json.dump(encrypted_users, f)
+
+def set_session_key():
+    pass
 
 
 def start_server(host, port, certfile, keyfile):
@@ -72,6 +78,19 @@ def handle_client(ssl_socket):
             else:
                 ssl_socket.sendall(b"Invalid command. Please register or login.")
         else:
+            if message.startswith("CONNECT"):
+                _, my_user, target_user = message.split()
+                target_file = "../Client/" + target_user + "public.pem"
+                target_pub = ""
+                with open(target_file, 'rb') as file_in:
+                    target_pub = file_in.read()
+                    target_pub = target_pub.decode()
+                    target_pub = target_pub[26:-25]
+                print(target_pub)
+                plain = target_user + " " + target_pub + " " + my_user
+                signature = sign_message(plain.encode(), private_key)
+                sent = plain + "||" + signature.decode("latin1")
+                ssl_socket.sendall(sent.encode("latin1"))
             if message.startswith("LOGOUT"):
                 _, username = message.split()
                 logged_in_users.remove(username)

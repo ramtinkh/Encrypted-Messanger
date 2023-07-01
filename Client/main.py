@@ -1,3 +1,4 @@
+import os
 import socket
 import ssl
 
@@ -20,7 +21,7 @@ def connect_to_server(host, port):
 
     while True:
         command = input("Enter command (REGISTER or LOGIN): ")
-        print(encrypt_message(command.encode(), server_pub))
+        # print(encrypt_message(command.encode(), server_pub))
         ssl_socket.sendall(encrypt_message(command.encode(), server_pub))
         _, username, password = command.split()
         response = receive_data(ssl_socket)
@@ -32,11 +33,31 @@ def connect_to_server(host, port):
     key_gen(username, password)
     # Authenticated commands
     while True:
-        command = input("Enter authenticated command (e.g., SEND, RECEIVE, FORWARD.): ")
-        ssl_socket.sendall(command.encode())
+        command = input("Enter authenticated command (e.g., CONNECT, SEND, RECEIVE, FORWARD.): ")
+        ssl_socket.sendall(encrypt_message(command.encode(), server_pub))
         response = receive_data(ssl_socket)
-        print("Server response:", response.decode())
-        if response.decode() == "logout successful.":
+        print("Server response:", response.decode("latin1"))
+        if command.startswith("CONNECT"):
+            _, my_user, target_user = command.split()
+            res = response.decode("latin1").split("||")
+            signature = res[1].encode("latin1")
+            # verified = verify_message()
+            # dec = encrypt_message(response, server_pub).decode().strip()
+            # print(dec)
+            # splitted = dec.split()
+            # if dec[0] == target_user and dec[2] == my_user:
+            #     target_public = dec[1]
+            #     nonce = os.urandom(16)
+            #     plain = nonce.decode() + " " + my_user
+            #     encrypted = encrypt_message(plain, target_public)
+            #     command = "FORWARD " + encrypted + " " + target_user
+            #     print(command)
+            #     encrypted = encrypt_message(command.encode(), target_public)
+            #     print(encrypted)
+            #     ssl_socket.sendall(encrypted)
+            #     response = receive_data(ssl_socket)
+            #     print("Server response:", response.decode())
+        if response.decode("latin1") == "logout successful.":
             break
 
     ssl_socket.close()

@@ -10,7 +10,7 @@ import json
 
 def generate_server_cert():
     password = input("Enter Password:")
-
+    # password = "1234"
     if os.stat('server.key').st_size == 0:
         # Generate a new private key
         private_key = rsa.generate_private_key(
