@@ -1,6 +1,8 @@
 import socket
 import ssl
 
+from keygen import *
+
 
 def connect_to_server(host, port):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -13,13 +15,14 @@ def connect_to_server(host, port):
         command = input("Enter command (REGISTER or LOGIN): ")
 
         ssl_socket.sendall(command.encode())
-        _, username, _ = command.split()
+        _, username, password = command.split()
         response = receive_data(ssl_socket)
         print("Server response:", response.decode())
 
         if response.decode() == b"Login successful.":
             break
 
+    key_gen(username, password)
     # Authenticated commands
     while True:
         command = input("Enter authenticated command (e.g., SEND, RECEIVE, FORWARD.): ")
