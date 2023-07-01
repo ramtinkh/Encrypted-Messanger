@@ -11,8 +11,9 @@ def connect_to_server(host, port):
 
     while True:
         command = input("Enter command (REGISTER or LOGIN): ")
-        ssl_socket.sendall(command.encode())
 
+        ssl_socket.sendall(command.encode())
+        _, username, _ = command.split()
         response = receive_data(ssl_socket)
         print("Server response:", response.decode())
 
@@ -21,9 +22,8 @@ def connect_to_server(host, port):
 
     # Authenticated commands
     while True:
-        command = input("Enter authenticated command (e.g., SEND, RECEIVE, etc.): ")
+        command = input("Enter authenticated command (e.g., SEND, RECEIVE, FORWARD.): ")
         ssl_socket.sendall(command.encode())
-
         response = receive_data(ssl_socket)
         print("Server response:", response.decode())
 
