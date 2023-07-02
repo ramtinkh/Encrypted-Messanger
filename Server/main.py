@@ -1,6 +1,8 @@
 import socket
 import ssl
 import json
+import threading
+
 import bcrypt
 import os
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
@@ -43,11 +45,14 @@ def start_server(host, port, certfile, keyfile):
 
     while True:
         print("Waiting for client connection...")
+
         client_socket, client_address = server_socket.accept()
-        print("Client connected:", client_address)
+        print(f"New connection from {client_address}")
 
         ssl_socket = context.wrap_socket(client_socket, server_side=True)
-        handle_client(ssl_socket)
+        # Spawn a new thread to handle the client connection
+        thread = threading.Thread(target=handle_client, args=(ssl_socket,))
+        thread.start()
 
 def handle_client(ssl_socket):
     authenticated = False
@@ -78,6 +83,12 @@ def handle_client(ssl_socket):
             else:
                 ssl_socket.sendall(b"Invalid command. Please register or login.")
         else:
+            if message.startswith("ONLINES"):
+                onlines = ""
+                for i in logged_in_users:
+                    onlines += i + " "
+                response = "onlines: " + onlines
+                ssl_socket.sendall(response.encode())
             if message.startswith("CONNECT"):
                 _, my_user, target_user = message.split()
                 target_file = "../Client/" + target_user + "public.pem"
@@ -95,8 +106,9 @@ def handle_client(ssl_socket):
                 _, username = message.split()
                 logged_in_users.remove(username)
                 ssl_socket.sendall(b"logout successful.")
+                break
             # Process authenticated client commands here
-            ssl_socket.sendall(b"Authenticated command received.")
+            # ssl_socket.sendall(b"Authenticated command received.")
 
     ssl_socket.close()
 
